@@ -19,6 +19,11 @@ mongoose.connect(process.env.MONGO_URI, {
 
 // ================= API ROUTES =================
 
+// Root healthcheck
+app.get("/", (req, res) => {
+    res.send("✅ Weather backend is running");
+});
+
 // SIGNUP
 app.post('/signup', async (req, res) => {
     try {
