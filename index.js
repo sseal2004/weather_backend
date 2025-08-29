@@ -10,7 +10,11 @@ app.use(express.json());
 app.use(cors());
 
 // ================= MongoDB CONNECTION =================
-mongoose.connect(process.env.MONGO_URI, {
+const MONGO_URI =
+  process.env.MONGO_URI ||
+  "mongodb+srv://ssealabc_db_user:seal2004@cluster0.e9gzewo.mongodb.net/weather?retryWrites=true&w=majority&appName=Cluster0";
+
+mongoose.connect(MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })
@@ -18,11 +22,6 @@ mongoose.connect(process.env.MONGO_URI, {
 .catch(err => console.error("❌ MongoDB connection error:", err));
 
 // ================= API ROUTES =================
-
-// Root healthcheck
-app.get("/", (req, res) => {
-    res.send("✅ Weather backend is running");
-});
 
 // SIGNUP
 app.post('/signup', async (req, res) => {
