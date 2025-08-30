@@ -10,16 +10,12 @@ app.use(express.json());
 app.use(cors());
 
 // ================= MongoDB CONNECTION =================
-const MONGO_URI =
-  process.env.MONGO_URI ||
-  "mongodb+srv://ssealabc_db_user:seal2004@cluster0.e9gzewo.mongodb.net/weather?retryWrites=true&w=majority&appName=Cluster0";
-
-mongoose.connect(MONGO_URI, {
+mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })
 .then(() => console.log("✅ MongoDB connected"))
-.catch(err => console.error("❌ MongoDB connection error:", err));
+.catch(err => console.error("❌ MongoDB connection error:", err.message));
 
 // ================= API ROUTES =================
 
@@ -56,15 +52,16 @@ app.post('/signup', async (req, res) => {
             user: { id: newUser._id, name: newUser.name, email: newUser.email }
         });
     } catch (err) {
+        console.error("❌ Signup error:", err.message);
         res.status(500).json({ status: "Error", error: err.message });
     }
 });
 
 // LOGIN
 app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-
     try {
+        const { email, password } = req.body;
+
         const user = await WeatherModel.findOne({ email });
         if (!user) {
             return res.status(404).json({ status: "Error", error: "No record exists" });
@@ -80,7 +77,8 @@ app.post('/login', async (req, res) => {
             user: { id: user._id, name: user.name, email: user.email }
         });
     } catch (err) {
-        res.status(500).json({ status: "Error", error: "Something went wrong" });
+        console.error("❌ Login error:", err.message);
+        res.status(500).json({ status: "Error", error: err.message });
     }
 });
 
@@ -89,8 +87,9 @@ app.get('/weather', async (req, res) => {
     try {
         const allWeather = await WeatherModel.find().select("-password");
         res.json(allWeather);
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch data' });
+    } catch (err) {
+        console.error("❌ Fetch error:", err.message);
+        res.status(500).json({ error: 'Failed to fetch data', details: err.message });
     }
 });
 
