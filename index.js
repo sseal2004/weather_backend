@@ -1,4 +1,4 @@
-require('dotenv').config(); // load .env variables
+require('dotenv').config(); 
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -10,12 +10,17 @@ app.use(express.json());
 app.use(cors());
 
 // ================= MongoDB CONNECTION =================
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-.then(() => console.log("✅ MongoDB connected"))
-.catch(err => console.error("❌ MongoDB connection error:", err.message));
+(async () => {
+    try {
+        await mongoose.connect(process.env.MONGO_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
+        console.log("✅ MongoDB connected");
+    } catch (err) {
+        console.error("❌ MongoDB connection error:", err.message);
+    }
+})();
 
 // ================= API ROUTES =================
 
@@ -24,21 +29,18 @@ app.post('/signup', async (req, res) => {
     try {
         const { name, email, password } = req.body;
 
-        // Check if user already exists
         const existingUser = await WeatherModel.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ status: "Error", error: "Email already exists" });
         }
 
-        // ✅ Password validation (max 10 chars allowed)
-        if (!password || password.length > 10) {
+        if (!password || password.length < 6 || password.length > 50) {
             return res.status(400).json({
                 status: "Error",
-                error: "Password must be 10 characters or less"
+                error: "Password must be between 6 and 50 characters"
             });
         }
 
-        // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = await WeatherModel.create({
@@ -93,8 +95,5 @@ app.get('/weather', async (req, res) => {
     }
 });
 
-// ================= START SERVER =================
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-});
+// ================= Vercel Export =================
+module.exports = app;
